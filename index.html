@@ -10,13 +10,17 @@
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec2 a_Position;
         attribute vec4 a_color;
-        varying vec2 v_Position;
+        attribute vec2 a_texCords;
+
+        // varying vec2 v_Position;
         varying vec4 v_color;
+        varying vec2 v_texCords;
 
         void main() {
             v_color = a_color;
-            v_Position = a_Position;
-            gl_Position = vec4(a_Position, 0.0, 1.0);
+            /// v_Position = a_Position;
+            v_texCords = a_texCords;
+            gl_Position = vec4(a_Position, 1.0, 1.0);
             gl_PointSize = 10.0;
         }
     </script>
@@ -24,16 +28,18 @@
     <script id="fragment-shader" type="x-shader/x-fragment">
         precision mediump float;
         varying vec4 v_color;
-        varying vec2 v_Position;
+        // varying vec2 v_Position;
+        varying vec2 v_texCords;
+
         uniform bool curve;
         uniform float u_epsilon;
 
         void main() {
             if (curve) {
-                vec2 normal = (v_Position + 1.0) * 0.5;
-                float f_uv = normal.x * normal.x - normal.y;
+                float f_uv = v_texCords.x * v_texCords.x - v_texCords.y;
                 if (abs(f_uv) < u_epsilon) {
-                    gl_FragColor = v_color;
+                    //gl_FragColor = v_color;
+                    gl_FragColor = vec4(v_texCords.x, v_texCords.x, v_texCords.x, 1.0);
                 } else {
                     discard;
                 }

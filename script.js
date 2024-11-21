@@ -89,6 +89,18 @@ window.onload = () => {
     let index = 0
     let num_points = 0
 
+
+    let texCodsVerts = [vec2(1, 0), vec2(0.5, 0), vec2(1, 1)]
+
+    let tBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec2"], gl.STATIC_DRAW)
+
+    let a_texCordsLoc = gl.getAttribLocation(program, "a_texCords");
+    gl.vertexAttribPointer(a_texCordsLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_texCordsLoc)
+
+
     let vBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec2"], gl.STATIC_DRAW)
@@ -96,7 +108,6 @@ window.onload = () => {
     let vPosition = gl.getAttribLocation(program, "a_Position");
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition)
-
 
 
     let cBuffer = gl.createBuffer()
@@ -116,7 +127,7 @@ window.onload = () => {
     let bezierBuffer = []
     let bezierBufferColor = []
 
-    gl.uniform1f(gl.getUniformLocation(program, "u_epsilon"), 0.0)
+    gl.uniform1f(gl.getUniformLocation(program, "u_epsilon"),5)
 
     function clearCanvas() {
         let color = colors[clearMenu.value]
@@ -182,11 +193,16 @@ window.onload = () => {
                         circleColors[i] = circleBufferColor[0]
                     }
 
-                    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
-                    gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(circle))
+                    gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer)
+                    gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(texCodsVerts))
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(circleColors))
+
+                    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
+                    gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(circle))
+
+
 
                     circleBuffer = []
                     circleBufferColor = []
