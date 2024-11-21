@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="./initShaders.js"></script>
+    <!-- <script type="text/javascript" src="./initShaders2.js"></script> -->
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec2 a_Position;
+        attribute vec4 a_color;
+        varying vec2 v_Position;
+        varying vec4 v_color;
+
+        void main() {
+            v_color = a_color;
+            v_Position = a_Position;
+            gl_Position = vec4(a_Position, 0.0, 1.0);
+            gl_PointSize = 10.0;
+        }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 v_color;
+        varying vec2 v_Position;
+        uniform bool curve;
+        uniform float u_epsilon;
+
+        void main() {
+            if (curve) {
+                vec2 normal = (v_Position + 1.0) * 0.5;
+                float f_uv = normal.x * normal.x - normal.y;
+                if (abs(f_uv) < u_epsilon) {
+                    gl_FragColor = v_color;
+                } else {
+                    discard;
+                }
+            } else {
+                gl_FragColor = v_color;
+            }
+            
+        }
+    </script>
+
+
+    <script type="text/javascript" src="./script.js"></script>
+    <script type="text/javascript" src="./MV.js"></script>
+    <script type="text/javascript" src="./webgl-utils.js"></script>
+    <title>Project</title>
+
+</head>
+
+<body>
+    <canvas id="c" height="512" width="512"></canvas>
+
+    <select id="colorMenu" , size="8">
+        <option value="0">Black</option>
+        <option value="1">Red</option>
+        <option value="2">Yellow</option>
+        <option value="3">Green</option>
+        <option value="4">Blue</option>
+        <option value="5">Magenta</option>
+        <option value="6">Cyan</option>
+        <option value="7">Cornflower</option>
+    </select>
+    <select id="clearMenu" , size="1">
+        <option value="0">Black</option>
+        <option value="1">Red</option>
+        <option value="2">Yellow</option>
+        <option value="3">Green</option>
+        <option value="4">Blue</option>
+        <option value="5">Magenta</option>
+        <option value="6">Cyan</option>
+        <option value="7">Cornflower</option>
+    </select>
+    <button id="clearCanvas">Clear Canvas</button>
+
+    <select id="modeSelect" , size="1"">
+        <option value="0">Normal</option>
+        <option value="1">Triangle</option>
+        <option value="2">Cricle</option>
+        <option value="3">Bezier Curve</option>
+    </select>
+
+</body>
+
+
+</html>
