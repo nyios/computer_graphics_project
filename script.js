@@ -90,7 +90,8 @@ window.onload = () => {
     let num_points = 0
 
 
-    let texCodsVerts = [vec2(1, 0), vec2(0.5, 0), vec2(1, 1)]
+
+    let texCodsVerts = [vec2(0, 0), vec2(0.5, 0), vec2(1, 1)]
 
     let tBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer)
@@ -127,7 +128,7 @@ window.onload = () => {
     let bezierBuffer = []
     let bezierBufferColor = []
 
-    gl.uniform1f(gl.getUniformLocation(program, "u_epsilon"),5)
+    gl.uniform1f(gl.getUniformLocation(program, "u_epsilon"), 0.0)
 
     function clearCanvas() {
         let color = colors[clearMenu.value]
@@ -139,7 +140,7 @@ window.onload = () => {
     }
 
 
-    // add event listener
+
     canvas.addEventListener("click", (e) => {
         let color = colors[colorMenu.value]
 
@@ -148,6 +149,7 @@ window.onload = () => {
         mousepos = vec2(2 * (e.clientX - rec.x) / canvas.width - 1, 2 * (canvas.height - (e.clientY - rec.y) - 1) / canvas.height - 1); // get mouse pos in [0, 1.0]
         let point = []
         add_point(point, mousepos, 0.05)
+
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
         gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(point))
 
@@ -193,9 +195,6 @@ window.onload = () => {
                         circleColors[i] = circleBufferColor[0]
                     }
 
-                    gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer)
-                    gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(texCodsVerts))
-
                     gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(circleColors))
 
@@ -217,6 +216,9 @@ window.onload = () => {
                 if (bezierBuffer.length == 3) {
                     index -= 18
                     num_points -= 18
+                    
+                    gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer)
+                    gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(texCodsVerts))
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(bezierBuffer))
