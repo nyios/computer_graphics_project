@@ -8,6 +8,13 @@ function setupWebGL(canvas) {
 }
 
 
+function initAttributeVariable(gl, attribute, buffer) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.vertexAttribPointer(attribute, buffer.num, buffer.type, false, 0, 0);
+    gl.enableVertexAttribArray(attribute);
+}
+
+
 function render(gl, numPoints) {
     gl.clear(gl.COLOR_BUFFER_BIT)
     gl.drawArrays(gl.TRIANGLES, 0, numPoints)
@@ -82,42 +89,58 @@ window.onload = () => {
 
     gl = setupWebGL(canvas);
     let program = initShaders(gl, "vertex-shader", "fragment-shader");
-    gl.useProgram(program);
+    let program_bezier = initShaders(gl, "vertex-shader-bezier", "fragment-shader-bezier");
 
     // create buffer for points
-    let max_verts = 1000
+    const max_verts = 10000
     let index = 0
     let num_points = 0
 
 
-
-    let texCodsVerts = [vec2(0, 0), vec2(0.5, 0), vec2(1, 1)]
-
-    let tBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec2"], gl.STATIC_DRAW)
-
-    let a_texCordsLoc = gl.getAttribLocation(program, "a_texCords");
-    gl.vertexAttribPointer(a_texCordsLoc, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_texCordsLoc)
-
+    ///////////////////////
+    //  Triangel, Circle, Points
+    ///////////////////////
+    gl.useProgram(program)
 
     let vBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
+    vBuffer.num = 2
+    vBuffer.type = gl.FLOAT
+    let vPosition = gl.getAttribLocation(program, "a_Position");
+    initAttributeVariable(gl, vPosition, vBuffer)
+
     gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec2"], gl.STATIC_DRAW)
 
-    let vPosition = gl.getAttribLocation(program, "a_Position");
-    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vPosition)
-
-
     let cBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
+    cBuffer.num = 4
+    cBuffer.type = gl.FLOAT
+    let vColor = gl.getAttribLocation(program, "a_color");
+    initAttributeVariable(gl, vColor, cBuffer)
+    
     gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec4"], gl.STATIC_DRAW)
 
-    let vColor = gl.getAttribLocation(program, "a_color");
-    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vColor);
+    ///////////////////////
+    //      Bezier
+    ///////////////////////
+    gl.useProgram(program_bezier)
+
+    const texCodsVerts = [vec2(0, 0), vec2(0.5, 0), vec2(1, 1)]
+
+    let tBuffer = gl.createBuffer()
+    tBuffer.num = 2
+    tBuffer.type = gl.FLOAT
+    let a_texCordsLoc = gl.getAttribLocation(program_bezier, "a_texCords");
+    initAttributeVariable(gl, a_texCordsLoc, tBuffer)
+
+    gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec2"], gl.STATIC_DRAW)
+
+
+    let bezierVertexBuffer = gl.createBuffer()
+    bezierVertexBuffer.num = 2
+    bezierVertexBuffer.type = gl.FLOAT
+    let bezierVertexBufferLoc = gl.getAttribLocation(program_bezier, "a_Position");
+    initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
+
+    gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec2"], gl.STATIC_DRAW)
 
     let triangleBuffer = []
     let triangleBufferColor = []
@@ -128,7 +151,6 @@ window.onload = () => {
     let bezierBuffer = []
     let bezierBufferColor = []
 
-    gl.uniform1f(gl.getUniformLocation(program, "u_epsilon"), 0.0)
 
     function clearCanvas() {
         let color = colors[clearMenu.value]
@@ -150,6 +172,11 @@ window.onload = () => {
         let point = []
         add_point(point, mousepos, 0.05)
 
+        gl.useProgram(program)
+        initAttributeVariable(gl, vPosition, vBuffer)
+        initAttributeVariable(gl, vColor, cBuffer)
+
+
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
         gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(point))
 
@@ -163,16 +190,21 @@ window.onload = () => {
                 triangleBufferColor.push(color)
 
                 if (triangleBuffer.length == 3) {
+                    console.log(triangleBuffer)
 
-                    gl.uniform1i(gl.getUniformLocation(program, "curve"), false)
                     index -= 18
                     num_points -= 18
+
+                    gl.useProgram(program)
+                    initAttributeVariable(gl, vPosition, vBuffer)
+                    initAttributeVariable(gl, vColor, cBuffer)
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(triangleBuffer))
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(triangleBufferColor))
+
                     triangleBuffer = []
                     triangleBufferColor = []
                     index += 3
@@ -184,7 +216,7 @@ window.onload = () => {
                 circleBufferColor.push(color)
 
                 if (circleBuffer.length == 2) {
-                    gl.uniform1i(gl.getUniformLocation(program, "curve"), false)
+
                     index -= 12
                     num_points -= 12
                     let radius = distance(circleBuffer[0], circleBuffer[1])
@@ -194,6 +226,10 @@ window.onload = () => {
                     for (let i = 0; i < circle.length; i += 3) {
                         circleColors[i] = circleBufferColor[0]
                     }
+
+                    gl.useProgram(program)
+                    initAttributeVariable(gl, vPosition, vBuffer)
+                    initAttributeVariable(gl, vColor, cBuffer)
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(circleColors))
@@ -216,17 +252,18 @@ window.onload = () => {
                 if (bezierBuffer.length == 3) {
                     index -= 18
                     num_points -= 18
-                    
-                    gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer)
+                    gl.useProgram(bezierBuffer)
+
+                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.0)
+                    initAttributeVariable(gl, a_texCordsLoc, tBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(texCodsVerts))
 
-                    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
+                    initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(bezierBuffer))
 
-                    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
-                    gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(bezierBufferColor))
+                    // gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
+                    // gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(bezierBufferColor))
 
-                    gl.uniform1i(gl.getUniformLocation(program, "curve"), true)
                     bezierBuffer = []
                     bezierBufferColor = []
                     // index += 3
@@ -255,6 +292,23 @@ window.onload = () => {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
 
-    function animate() { render(gl, num_points); requestAnimationFrame(animate) }
+    function animate() {
+        // render(gl, num_points);
+        gl.useProgram(program)
+        initAttributeVariable(gl, vPosition, vBuffer)
+        initAttributeVariable(gl, vColor, cBuffer)
+
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.drawArrays(gl.TRIANGLES, 0, num_points)
+
+        gl.useProgram(program_bezier)
+        initAttributeVariable(gl, a_texCordsLoc, tBuffer)
+        initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
+
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.drawArrays(gl.TRIANGLES, 0, num_points)
+
+        requestAnimationFrame(animate)
+    }
     animate();
 }

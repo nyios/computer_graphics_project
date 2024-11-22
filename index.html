@@ -12,14 +12,10 @@
         attribute vec4 a_color;
         attribute vec2 a_texCords;
 
-        // varying vec2 v_Position;
         varying vec4 v_color;
-        varying vec2 v_texCords;
 
         void main() {
             v_color = a_color;
-            // v_Position = a_Position;
-            v_texCords = a_texCords;
             gl_Position = vec4(a_Position, 1.0, 1.0);
             gl_PointSize = 10.0;
         }
@@ -28,24 +24,44 @@
     <script id="fragment-shader" type="x-shader/x-fragment">
         precision mediump float;
         varying vec4 v_color;
+        void main() {
+            gl_FragColor = v_color;
+        }
+    </script>
+
+   <script id="vertex-shader-bezier" type="x-shader/x-vertex">
+        attribute vec2 a_Position;
+        // attribute vec4 a_color;
+        attribute vec2 a_texCords;
+
         // varying vec2 v_Position;
+        //varying vec4 v_color;
         varying vec2 v_texCords;
 
-        uniform bool curve;
+        void main() {
+            //v_color = a_color;
+            v_texCords = a_texCords;
+            gl_Position = vec4(a_Position, 1.0, 1.0);
+            gl_PointSize = 10.0;
+        }
+    </script>
+
+    <script id="fragment-shader-bezier" type="x-shader/x-fragment">
+        precision mediump float;
+        //varying vec4 v_color;
+        varying vec2 v_texCords;
+
         uniform float u_epsilon;
 
         void main() {
-            if (curve) {
-                // float f_uv = v_texCords.x * v_texCords.x - v_texCords.y;
-                float f_uv = v_texCords.y - v_texCords.x * v_texCords.x;
-                if (abs(f_uv) < u_epsilon || f_uv < 0.0) {
-                    gl_FragColor = v_color;
-                    //gl_FragColor = vec4(v_texCords.x, v_texCords.x, v_texCords.x, 1.0);
-                } else {
-                    discard;
-                }
+            // float f_uv = v_texCords.x * v_texCords.x - v_texCords.y;
+            float f_uv = v_texCords.y - v_texCords.x * v_texCords.x;
+            if (abs(f_uv) < u_epsilon || f_uv < 0.0) {
+                gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+                // gl_FragColor = v_color;
+                //gl_FragColor = vec4(v_texCords.x, v_texCords.x, v_texCords.x, 1.0);
             } else {
-                gl_FragColor = v_color;
+                discard;
             }
             
         }
