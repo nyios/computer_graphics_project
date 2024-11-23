@@ -94,7 +94,9 @@ window.onload = () => {
     // create buffer for points
     const max_verts = 10000
     let index = 0
+    let index_bezier = 0
     let num_points = 0
+    let num_points_bezier = 0
 
 
     ///////////////////////
@@ -173,15 +175,11 @@ window.onload = () => {
         add_point(point, mousepos, 0.05)
 
         gl.useProgram(program)
-        initAttributeVariable(gl, vPosition, vBuffer)
-        initAttributeVariable(gl, vColor, cBuffer)
-
-
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
         gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(point))
-
         gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
         gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(Array(6).fill(color)))
+
         index += 6
 
         switch (switchMode.value) {
@@ -252,22 +250,21 @@ window.onload = () => {
                 if (bezierBuffer.length == 3) {
                     index -= 18
                     num_points -= 18
-                    gl.useProgram(bezierBuffer)
+                    gl.useProgram(program_bezier)
 
                     gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.0)
                     initAttributeVariable(gl, a_texCordsLoc, tBuffer)
-                    gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(texCodsVerts))
+                    gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec2"], flatten(texCodsVerts))
 
                     initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
-                    gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(bezierBuffer))
+                    gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec2"], flatten(bezierBuffer))
 
                     // gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
                     // gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(bezierBufferColor))
 
                     bezierBuffer = []
                     bezierBufferColor = []
-                    // index += 3
-                    index += 3
+                    index_bezier += 3
                 }
                 break
             default:
@@ -276,6 +273,7 @@ window.onload = () => {
 
         // TODO: might still be wrong
         num_points = Math.max(num_points, index)
+        num_points_bezier = Math.max(num_points_bezier, index_bezier)
         if (num_points >= max_verts) {
             clearCanvas()
         }
@@ -305,8 +303,7 @@ window.onload = () => {
         initAttributeVariable(gl, a_texCordsLoc, tBuffer)
         initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
 
-        gl.clear(gl.COLOR_BUFFER_BIT)
-        gl.drawArrays(gl.TRIANGLES, 0, num_points)
+        gl.drawArrays(gl.TRIANGLES, 0, num_points_bezier)
 
         requestAnimationFrame(animate)
     }
