@@ -115,15 +115,15 @@ window.onload = () => {
     ///////////////////////
     gl.useProgram(program_bezier)
 
-    const texCodsVerts = [vec2(0, 0), vec2(0.5, 0), vec2(1, 1)]
+    let texCordsVerts_base = [vec2(0, 0), vec2(0.5, 0), vec2(1, 1)]
 
     let tBuffer = gl.createBuffer()
-    tBuffer.num = 2
+    tBuffer.num = 3
     tBuffer.type = gl.FLOAT
     let a_texCordsLoc = gl.getAttribLocation(program_bezier, "a_texCords");
     initAttributeVariable(gl, a_texCordsLoc, tBuffer)
 
-    gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec2"], gl.STATIC_DRAW)
+    gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec3"], gl.STATIC_DRAW)
 
 
     let bezierVertexBuffer = gl.createBuffer()
@@ -190,7 +190,6 @@ window.onload = () => {
                 triangleBufferColor.push(color)
 
                 if (triangleBuffer.length == 3) {
-                    console.log(triangleBuffer)
 
                     index -= 18
                     num_points -= 18
@@ -246,20 +245,28 @@ window.onload = () => {
 
                 break;
             case "3":
+            case "4":
                 bezier.push(mousepos)
                 bezierColor.push(color)
 
                 if (bezier.length == 3) {
-                    console.log(bezierColor)
                     index -= 18
                     num_points -= 18
                     gl.useProgram(program_bezier)
-                    console.log(index_bezier)
 
                     gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.0)
 
+                    let texCordsVerts;
+
+                    if (switchMode.value == "3"){
+                        texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], 1.0)})
+                    } else {
+                        texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], -1.0)})
+                    }
+
+
                     initAttributeVariable(gl, a_texCordsLoc, tBuffer)
-                    gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec2"], flatten(texCodsVerts))
+                    gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec3"], flatten(texCordsVerts))
 
                     initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec2"], flatten(bezier))
