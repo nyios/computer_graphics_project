@@ -56,16 +56,6 @@ function calc_circle_triangle(x, y, radius, n) {
     return circle_vertecies
 }
 
-function calc_bezier_curve(p0, p1, p2, numSegments) {
-    let bezierVertices = [];
-    for (let i = 0; i <= numSegments; i++) {
-        let t = i / numSegments;
-        let x = (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0];
-        let y = (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1];
-        bezierVertices.push(vec2(x, y));
-    }
-    return bezierVertices;
-}
 
 
 window.onload = () => {
@@ -144,14 +134,23 @@ window.onload = () => {
 
     gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec2"], gl.STATIC_DRAW)
 
+    // color buffer bezier curve
+    let bezierColorBuffer = gl.createBuffer()
+    bezierColorBuffer.num = 4
+    bezierColorBuffer.type = gl.FLOAT
+    let bezierColorLoc = gl.getAttribLocation(program_bezier, "a_color");
+    initAttributeVariable(gl, bezierColorLoc, bezierColorBuffer)
+
+    gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec4"], gl.STATIC_DRAW)
+
     let triangleBuffer = []
     let triangleBufferColor = []
 
     let circleBuffer = []
     let circleBufferColor = []
 
-    let bezierBuffer = []
-    let bezierBufferColor = []
+    let bezier = []
+    let bezierColor = []
 
 
     function clearCanvas() {
@@ -159,6 +158,8 @@ window.onload = () => {
 
         num_points = 0
         index = 0
+        num_points_bezier = 0
+        index_bezier = 0
         gl.clearColor(color[0], color[1], color[2], color[3]);
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
@@ -175,6 +176,7 @@ window.onload = () => {
         add_point(point, mousepos, 0.05)
 
         gl.useProgram(program)
+
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer)
         gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec2"], flatten(point))
         gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
@@ -244,26 +246,29 @@ window.onload = () => {
 
                 break;
             case "3":
-                bezierBuffer.push(mousepos)
-                bezierBufferColor.push(color)
+                bezier.push(mousepos)
+                bezierColor.push(color)
 
-                if (bezierBuffer.length == 3) {
+                if (bezier.length == 3) {
+                    console.log(bezierColor)
                     index -= 18
                     num_points -= 18
                     gl.useProgram(program_bezier)
+                    console.log(index_bezier)
 
                     gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.0)
+
                     initAttributeVariable(gl, a_texCordsLoc, tBuffer)
                     gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec2"], flatten(texCodsVerts))
 
                     initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
-                    gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec2"], flatten(bezierBuffer))
+                    gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec2"], flatten(bezier))
 
-                    // gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer)
-                    // gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(bezierBufferColor))
+                    initAttributeVariable(gl, bezierColorLoc, bezierColorBuffer)
+                    gl.bufferSubData(gl.ARRAY_BUFFER, index_bezier * sizeof["vec4"], flatten(bezierColor))
 
-                    bezierBuffer = []
-                    bezierBufferColor = []
+                    bezier = []
+                    bezierColor = []
                     index_bezier += 3
                 }
                 break
@@ -274,7 +279,7 @@ window.onload = () => {
         // TODO: might still be wrong
         num_points = Math.max(num_points, index)
         num_points_bezier = Math.max(num_points_bezier, index_bezier)
-        if (num_points >= max_verts) {
+        if ((num_points + num_points_bezier) >= max_verts) {
             clearCanvas()
         }
         // num_points = index 
@@ -302,6 +307,7 @@ window.onload = () => {
         gl.useProgram(program_bezier)
         initAttributeVariable(gl, a_texCordsLoc, tBuffer)
         initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
+        initAttributeVariable(gl, bezierColorLoc, bezierColorBuffer)
 
         gl.drawArrays(gl.TRIANGLES, 0, num_points_bezier)
 
