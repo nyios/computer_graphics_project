@@ -168,6 +168,7 @@ window.onload = () => {
 
     canvas.addEventListener("click", (e) => {
         let color = colors[colorMenu.value]
+        console.log(color)
 
         let rec = e.target.getBoundingClientRect()
 
