@@ -15,10 +15,6 @@ function initAttributeVariable(gl, attribute, buffer) {
 }
 
 
-function render(gl, numPoints) {
-    gl.clear(gl.COLOR_BUFFER_BIT)
-    gl.drawArrays(gl.TRIANGLES, 0, numPoints)
-}
 
 function add_point(array, point, size) {
     const offset = size / 2;
