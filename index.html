@@ -53,10 +53,10 @@
         uniform float u_epsilon;
 
         void main() {
-            // float f_uv = v_texCords.x * v_texCords.x - v_texCords.y;
             float f_uv = v_texCords.y - v_texCords.x * v_texCords.x;
-            if (abs(f_uv) < u_epsilon || f_uv * v_texCords.z < 0.0) {
-                //gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+            if (v_texCords.z == 0.0 && abs(f_uv) < u_epsilon) {
+                gl_FragColor = v_color;
+            } else if (f_uv * v_texCords.z < 0.0) {
                 gl_FragColor = v_color;
             } else {
                 discard;
@@ -104,6 +104,7 @@
         <option value="2">Cricle</option>
         <option value="3">Bezier Curve (Concav)</option>
         <option value="4">Bezier Curve (Convex)</option>
+        <option value="5">Bezier Curve (Thin)</option>
     </select>
 
 </body>

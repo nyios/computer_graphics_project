@@ -247,6 +247,7 @@ window.onload = () => {
                 break;
             case "3":
             case "4":
+            case "5":
                 bezier.push(mousepos)
                 bezierColor.push(color)
 
@@ -255,14 +256,16 @@ window.onload = () => {
                     num_points -= 18
                     gl.useProgram(program_bezier)
 
-                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.0)
+                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.01)
 
                     let texCordsVerts;
 
                     if (switchMode.value == "3"){
                         texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], 1.0)})
-                    } else {
+                    } else if (switchMode.value == "4") {
                         texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], -1.0)})
+                    } else {
+                        texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], 0.0)})
                     }
 
 
