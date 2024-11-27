@@ -78,6 +78,8 @@ window.onload = () => {
     let switchMode = document.getElementById("modeSelect");
 
     gl = setupWebGL(canvas);
+    gl.enable(gl.BLEND);  
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
     let program = initShaders(gl, "vertex-shader", "fragment-shader");
     let program_bezier = initShaders(gl, "vertex-shader-bezier", "fragment-shader-bezier");
 
