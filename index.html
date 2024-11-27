@@ -54,7 +54,7 @@
         uniform float u_aliasing;
 
         void main() {
-            float f_uv = v_texCords.y - v_texCords.x * v_texCords.x;
+            float f_uv = v_texCords.x * v_texCords.x - v_texCords.y;
             if (v_texCords.z == 0.0) {
                 float x = abs(f_uv);
                 float alpha = 1.0 - smoothstep(0.0, u_aliasing, x);
