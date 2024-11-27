@@ -55,32 +55,37 @@
         uniform float u_aliasing;
 
         void main() {  
-            // Gradients
-            vec2 px = dFdx(v_texCords.xy);
-            vec2 py = dFdy(v_texCords.xy);
-            // Chain rule
-            float fx = (2.0 * v_texCords.x) * px.x - px.y;
-            float fy = (2.0 * v_texCords.x) * py.x - py.y;
-            // Signed distance
-            float sd = ((v_texCords.x * v_texCords.x - v_texCords.y) * v_texCords.z) / sqrt(fx * fx + fy * fy);
-            // Linear alpha
-            float alpha = 0.5 - sd;
-            if (alpha > 1.0)
-                // Inside
-                alpha = 1.0;
-            else if (alpha < 0.0)
-                // Outside
-                discard;
+            float alpha;
             if (v_texCords.z == 0.0) {
                 float f_uv = v_texCords.x * v_texCords.x - v_texCords.y;
                 float x = abs(f_uv);
-                float alpha = 1.0 - smoothstep(0.0, u_aliasing, x);
-                vec3 color = v_color.rgb * alpha;
-                gl_FragColor = vec4(color, alpha);
+                if (x > 0.0 && x < u_epsilon - u_aliasing) {
+                    alpha = 1.0;
+                } else if (x > u_epsilon) {
+                    discard;
+                } else {
+                    alpha = 1.0 - smoothstep(u_epsilon-u_aliasing, u_epsilon, x);
+                }
             } else {
-                vec3 color = v_color.rgb * alpha;
-                gl_FragColor = vec4(color, alpha);
+                // Gradients
+                vec2 px = dFdx(v_texCords.xy);
+                vec2 py = dFdy(v_texCords.xy);
+                // Chain rule
+                float fx = (2.0 * v_texCords.x) * px.x - px.y;
+                float fy = (2.0 * v_texCords.x) * py.x - py.y;
+                // Signed distance
+                float sd = ((v_texCords.x * v_texCords.x - v_texCords.y) * v_texCords.z) / sqrt(fx * fx + fy * fy);
+                // Linear alpha
+                alpha = 0.5 - sd;
+                if (alpha > 1.0)
+                    // Inside
+                    alpha = 1.0;
+                else if (alpha < 0.0)
+                    // Outside
+                    discard;
             } 
+            vec3 color = v_color.rgb * alpha;
+            gl_FragColor = vec4(color, alpha);
             
         }
     </script>

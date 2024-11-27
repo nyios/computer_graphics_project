@@ -291,8 +291,8 @@ window.onload = () => {
 
                     gl.useProgram(program_bezier)
 
-                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_aliasing"), 0.01)
-                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.03)
+                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_aliasing"), 0.007)
+                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.02)
 
                     let texCordsVerts;
 
