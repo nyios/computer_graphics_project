@@ -72,6 +72,7 @@ window.onload = () => {
 
 
     let canvas = document.getElementById("c");
+    canvas.getContext("webgl", {premultipliedAlpha: false});
     let clearCanvasButton = document.getElementById("clearCanvas");
     let colorMenu = document.getElementById("colorMenu");
     let clearMenu = document.getElementById("clearMenu");
@@ -79,7 +80,7 @@ window.onload = () => {
 
     gl = setupWebGL(canvas);
     gl.enable(gl.BLEND);  
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
     let program = initShaders(gl, "vertex-shader", "fragment-shader");
     let program_bezier = initShaders(gl, "vertex-shader-bezier", "fragment-shader-bezier");
 

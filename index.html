@@ -54,8 +54,12 @@
 
         void main() {
             float f_uv = v_texCords.y - v_texCords.x * v_texCords.x;
-            if (v_texCords.z == 0.0 && abs(f_uv) < u_epsilon) {
-                gl_FragColor = v_color;
+            if (v_texCords.z == 0.0) {
+                if (abs(f_uv) < u_epsilon) {
+                    gl_FragColor = v_color;
+                } else {
+                    discard;
+                }
             } else {
                 float x = f_uv * v_texCords.z;
                 float alpha;
@@ -66,7 +70,8 @@
                 } else {
                     alpha = 1.0-x/u_epsilon;
                 }
-                gl_FragColor = vec4(v_color.rgb, alpha);
+                vec3 color = v_color.rgb;
+                gl_FragColor = vec4(color, alpha);
             } 
             
         }
