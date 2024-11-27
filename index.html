@@ -51,19 +51,18 @@
         varying vec3 v_texCords;
 
         uniform float u_epsilon;
+        uniform float u_aliasing;
 
         void main() {
             float f_uv = v_texCords.y - v_texCords.x * v_texCords.x;
             if (v_texCords.z == 0.0) {
-                if (abs(f_uv) < u_epsilon) {
-                    gl_FragColor = v_color;
-                } else {
-                    discard;
-                }
+                float x = abs(f_uv);
+                float alpha = 1.0 - smoothstep(0.0, u_aliasing, x);
+                vec3 color = v_color.rgb * alpha;
+                gl_FragColor = vec4(color, alpha);
             } else {
                 float x = f_uv * v_texCords.z;
-                float alpha = smoothstep(0.0, u_epsilon, x);
-                //float alpha;
+                float alpha = smoothstep(0.0, u_aliasing, x);
                 vec3 color = v_color.rgb * alpha;
                 gl_FragColor = vec4(color, alpha);
             } 
