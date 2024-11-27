@@ -77,6 +77,7 @@ window.onload = () => {
     gl = setupWebGL(canvas);
     gl.enable(gl.BLEND);  
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+    gl.getExtension('OES_standard_derivatives')
     let program = initShaders(gl, "vertex-shader", "fragment-shader");
     let program_bezier = initShaders(gl, "vertex-shader-bezier", "fragment-shader-bezier");
 
@@ -261,9 +262,9 @@ window.onload = () => {
                     let texCordsVerts;
 
                     if (switchMode.value == "3"){
-                        texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], 1.0)})
-                    } else if (switchMode.value == "4") {
                         texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], -1.0)})
+                    } else if (switchMode.value == "4") {
+                        texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], 1.0)})
                     } else {
                         texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], 0.0)})
                     }
