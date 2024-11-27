@@ -62,15 +62,9 @@
                 }
             } else {
                 float x = f_uv * v_texCords.z;
-                float alpha;
-                if (x <= 0.0) {
-                    alpha = 1.0;
-                } else if ( x > u_epsilon) {
-                    alpha = 0.0;
-                } else {
-                    alpha = 1.0-x/u_epsilon;
-                }
-                vec3 color = v_color.rgb;
+                float alpha = smoothstep(0.0, u_epsilon, x);
+                //float alpha;
+                vec3 color = v_color.rgb * alpha;
                 gl_FragColor = vec4(color, alpha);
             } 
             
