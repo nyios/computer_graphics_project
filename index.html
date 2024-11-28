@@ -28,7 +28,7 @@
         }
     </script>
 
-   <script id="vertex-shader-bezier" type="x-shader/x-vertex">
+    <script id="vertex-shader-bezier" type="x-shader/x-vertex">
         attribute vec2 a_Position;
         attribute vec4 a_color;
         attribute vec3 a_texCords;
@@ -101,7 +101,7 @@
 <body>
     <canvas id="c" height="512" width="512"></canvas>
 
-    <select id="colorMenu" , size="8">
+    <select id="colorMenu" size="8">
         <option selected value="0">Black</option>
         <option value="1">Red</option>
         <option value="2">Yellow</option>
@@ -111,7 +111,7 @@
         <option value="6">Cyan</option>
         <option value="7">Cornflower</option>
     </select>
-    <select id="clearMenu" , size="1">
+    <select id="clearMenu" size="1">
         <option value="0">Black</option>
         <option value="1">Red</option>
         <option value="2">Yellow</option>
@@ -123,8 +123,8 @@
     </select>
     <button id="clearCanvas">Clear Canvas</button>
 
-    <select id="modeSelect" , size="1"">
-        <option value="0">Normal</option>
+    <select id="modeSelect" size="1">
+        <option value=" 0" selected>Normal</option>
         <option value="1">Triangle</option>
         <option value="2">Circle</option>
         <option value="3">Bezier Curve (Concave)</option>
