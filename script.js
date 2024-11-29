@@ -73,6 +73,7 @@ window.onload = () => {
     let colorMenu = document.getElementById("colorMenu");
     let clearMenu = document.getElementById("clearMenu");
     let switchMode = document.getElementById("modeSelect");
+    let lineThickness = document.getElementById("lineThickness");
 
     gl = setupWebGL(canvas);
     gl.enable(gl.BLEND);  
@@ -256,8 +257,7 @@ window.onload = () => {
                     num_points -= 18
                     gl.useProgram(program_bezier)
 
-                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_aliasing"), 0.007)
-                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), 0.02)
+                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), lineThickness.value)
 
                     let texCordsVerts;
 
