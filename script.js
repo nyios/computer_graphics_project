@@ -68,7 +68,7 @@ window.onload = () => {
 
 
     let canvas = document.getElementById("c");
-    canvas.getContext("webgl", {premultipliedAlpha: false});
+    canvas.getContext("webgl", { premultipliedAlpha: false });
     let clearCanvasButton = document.getElementById("clearCanvas");
     let colorMenu = document.getElementById("colorMenu");
     let clearMenu = document.getElementById("clearMenu");
@@ -76,7 +76,7 @@ window.onload = () => {
     let lineThickness = document.getElementById("lineThickness");
 
     gl = setupWebGL(canvas);
-    gl.enable(gl.BLEND);  
+    gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
     gl.getExtension('OES_standard_derivatives')
     let program = initShaders(gl, "vertex-shader", "fragment-shader");
@@ -108,7 +108,7 @@ window.onload = () => {
     cBuffer.type = gl.FLOAT
     let vColor = gl.getAttribLocation(program, "a_color");
     initAttributeVariable(gl, vColor, cBuffer)
-    
+
     gl.bufferData(gl.ARRAY_BUFFER, max_verts * sizeof["vec4"], gl.STATIC_DRAW)
 
     ///////////////////////
@@ -153,9 +153,11 @@ window.onload = () => {
     let bezier = []
     let bezierColor = []
 
+    let drawCalls = []
 
     function clearCanvas() {
         let color = colors[clearMenu.value]
+        drawCalls = []
 
         num_points = 0
         index = 0
@@ -165,11 +167,36 @@ window.onload = () => {
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
+    function addDrawCall(drawCalls, num_points, program) {
+        if(drawCalls.length === 0) {
+            drawCalls.push([program, num_points])
+            return
+        }
+        let lastElement = drawCalls[drawCalls.length - 1]
+        if (lastElement[0] === program) {
+            lastElement[1] += num_points
+        } else {
+            drawCalls.push([program, num_points])
+        }
+
+    }
+    function removeDrawCall(drawCalls, num_points, program) {
+        if (drawCalls.length === 0) {
+            return
+        } 
+        let lastElement = drawCalls[drawCalls.length - 1]
+        if (lastElement[0] === program) {
+            if (lastElement[1] === num_points) {
+                drawCalls.pop()
+                return
+            }
+            lastElement[1] -= num_points
+        }
+    }
 
 
     canvas.addEventListener("click", (e) => {
         let color = colors[colorMenu.value]
-        console.log(color)
 
         let rec = e.target.getBoundingClientRect()
 
@@ -185,6 +212,7 @@ window.onload = () => {
         gl.bufferSubData(gl.ARRAY_BUFFER, index * sizeof["vec4"], flatten(Array(6).fill(color)))
 
         index += 6
+        addDrawCall(drawCalls, 6, program)
 
         switch (switchMode.value) {
             case "1":
@@ -195,6 +223,7 @@ window.onload = () => {
 
                     index -= 18
                     num_points -= 18
+                    removeDrawCall(drawCalls, 18, program)
 
                     gl.useProgram(program)
                     initAttributeVariable(gl, vPosition, vBuffer)
@@ -209,6 +238,7 @@ window.onload = () => {
                     triangleBuffer = []
                     triangleBufferColor = []
                     index += 3
+                    addDrawCall(drawCalls, 3, program)
                 }
 
                 break;
@@ -220,6 +250,8 @@ window.onload = () => {
 
                     index -= 12
                     num_points -= 12
+                    removeDrawCall(drawCalls, 12, program)
+
                     let radius = distance(circleBuffer[0], circleBuffer[1])
                     let circle = calc_circle_triangle(circleBuffer[0][0], circleBuffer[0][1], radius, 50);
 
@@ -243,6 +275,7 @@ window.onload = () => {
                     circleBuffer = []
                     circleBufferColor = []
                     index += circle.length
+                    addDrawCall(drawCalls, circle.length, program)
                 }
 
                 break;
@@ -255,18 +288,20 @@ window.onload = () => {
                 if (bezier.length == 3) {
                     index -= 18
                     num_points -= 18
+                    removeDrawCall(drawCalls, 18, program)
+
                     gl.useProgram(program_bezier)
 
                     gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), lineThickness.value)
 
                     let texCordsVerts;
 
-                    if (switchMode.value == "3"){
-                        texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], -1.0)})
+                    if (switchMode.value == "3") {
+                        texCordsVerts = texCordsVerts_base.map((vec) => { return vec3(vec[0], vec[1], -1.0) })
                     } else if (switchMode.value == "4") {
-                        texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], 1.0)})
+                        texCordsVerts = texCordsVerts_base.map((vec) => { return vec3(vec[0], vec[1], 1.0) })
                     } else {
-                        texCordsVerts = texCordsVerts_base.map((vec) => {return vec3(vec[0], vec[1], 0.0)})
+                        texCordsVerts = texCordsVerts_base.map((vec) => { return vec3(vec[0], vec[1], 0.0) })
                     }
 
 
@@ -282,6 +317,7 @@ window.onload = () => {
                     bezier = []
                     bezierColor = []
                     index_bezier += 3
+                    addDrawCall(drawCalls, 3, program_bezier)
                 }
                 break
             default:
@@ -307,22 +343,34 @@ window.onload = () => {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
 
+    let totalProgram
+    let totalBezier 
     function animate() {
-        // render(gl, num_points);
-        gl.useProgram(program)
-        initAttributeVariable(gl, vPosition, vBuffer)
-        initAttributeVariable(gl, vColor, cBuffer)
 
         gl.clear(gl.COLOR_BUFFER_BIT)
-        gl.drawArrays(gl.TRIANGLES, 0, num_points)
+        totalBezier = 0
+        totalProgram = 0 
+        for (let i = 0; i < drawCalls.length; i++) {
+            p = drawCalls[i][0]
+            num_points = drawCalls[i][1]
+            console.log(p === program)
+            if (p === program) {
+                gl.useProgram(program)
+                initAttributeVariable(gl, vPosition, vBuffer)
+                initAttributeVariable(gl, vColor, cBuffer)
+                gl.drawArrays(gl.TRIANGLES, totalProgram, num_points)
+                totalProgram += num_points
+            } else {
+                gl.useProgram(program_bezier)
+                initAttributeVariable(gl, a_texCordsLoc, tBuffer)
+                initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
+                initAttributeVariable(gl, bezierColorLoc, bezierColorBuffer)
+                gl.drawArrays(gl.TRIANGLES, totalBezier, num_points)
+                totalBezier += num_points
+            }
 
-        gl.useProgram(program_bezier)
-        initAttributeVariable(gl, a_texCordsLoc, tBuffer)
-        initAttributeVariable(gl, bezierVertexBufferLoc, bezierVertexBuffer)
-        initAttributeVariable(gl, bezierColorLoc, bezierColorBuffer)
 
-        gl.drawArrays(gl.TRIANGLES, 0, num_points_bezier)
-
+        }
         requestAnimationFrame(animate)
     }
     animate();
