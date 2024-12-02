@@ -292,8 +292,6 @@ window.onload = () => {
 
                     gl.useProgram(program_bezier)
 
-                    gl.uniform1f(gl.getUniformLocation(program_bezier, "u_epsilon"), lineThickness.value)
-
                     let texCordsVerts;
 
                     if (switchMode.value == "3") {
@@ -353,7 +351,6 @@ window.onload = () => {
         for (let i = 0; i < drawCalls.length; i++) {
             p = drawCalls[i][0]
             num_points = drawCalls[i][1]
-            console.log(p === program)
             if (p === program) {
                 gl.useProgram(program)
                 initAttributeVariable(gl, vPosition, vBuffer)

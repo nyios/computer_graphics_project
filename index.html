@@ -51,9 +51,6 @@
         varying vec4 v_color;
         varying vec3 v_texCords;
 
-        uniform float u_epsilon;
-        uniform float u_aliasing;
-
         void main() {  
             float alpha;
             // Gradients
@@ -64,7 +61,7 @@
             float dfy = (2.0 * v_texCords.x) * dy.x - dy.y;
             if (v_texCords.z == 0.0) {
                 float sd = (v_texCords.x * v_texCords.x - v_texCords.y) / sqrt(dfx * dfx + dfy * dfy);
-                alpha = (0.5 + u_epsilon) - abs(sd);
+                alpha = (0.5 + 2.0) - abs(sd);
             } else {
                 float sd = ((v_texCords.x * v_texCords.x - v_texCords.y) * v_texCords.z) / sqrt(dfx * dfx + dfy * dfy);
                 alpha = 0.5 - sd;
@@ -122,12 +119,6 @@
         <option value="4">Bezier Curve (Convex)</option>
         <option value="5">Bezier Curve (Thin)</option>
     </select>
-    <select id="lineThickness", size="1">
-        <option value="0.2">Thin</option>
-        <option selected value="0.8">Medium</option>
-        <option value="1.8">Thick</option>
-    </select>
-
 </body>
 
 
