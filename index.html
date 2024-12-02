@@ -57,18 +57,16 @@
         void main() {  
             float alpha;
             // Gradients
-            vec2 px = dFdx(v_texCords.xy);
-            vec2 py = dFdy(v_texCords.xy);
+            vec2 dx = dFdx(v_texCords.xy);
+            vec2 dy = dFdy(v_texCords.xy);
             // Chain rule
-            float fx = (2.0 * v_texCords.x) * px.x - px.y;
-            float fy = (2.0 * v_texCords.x) * py.x - py.y;
+            float dfx = (2.0 * v_texCords.x) * dx.x - dx.y;
+            float dfy = (2.0 * v_texCords.x) * dy.x - dy.y;
             if (v_texCords.z == 0.0) {
-                // Signed distance
-                float sd = (v_texCords.x * v_texCords.x - v_texCords.y) / sqrt(fx * fx + fy * fy);
-                alpha = (1.0 + u_epsilon) - abs(sd);
+                float sd = (v_texCords.x * v_texCords.x - v_texCords.y) / sqrt(dfx * dfx + dfy * dfy);
+                alpha = (0.5 + u_epsilon) - abs(sd);
             } else {
-                // Signed distance
-                float sd = ((v_texCords.x * v_texCords.x - v_texCords.y) * v_texCords.z) / sqrt(fx * fx + fy * fy);
+                float sd = ((v_texCords.x * v_texCords.x - v_texCords.y) * v_texCords.z) / sqrt(dfx * dfx + dfy * dfy);
                 alpha = 0.5 - sd;
                 if (alpha > 1.0)
                     // Inside
@@ -117,7 +115,7 @@
     <button id="clearCanvas">Clear Canvas</button>
 
     <select id="modeSelect" , size="1">
-        <option value="0">Normal</option>
+        <option value="0">Point</option>
         <option value="1">Triangle</option>
         <option value="2">Circle</option>
         <option value="3">Bezier Curve (Concave)</option>
@@ -126,7 +124,7 @@
     </select>
     <select id="lineThickness", size="1">
         <option value="0.2">Thin</option>
-        <option selected value="0.8">Normal</option>
+        <option selected value="0.8">Medium</option>
         <option value="1.8">Thick</option>
     </select>
 
