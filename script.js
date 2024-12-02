@@ -322,7 +322,6 @@ window.onload = () => {
                 break;
         }
 
-        // TODO: might still be wrong
         num_points = Math.max(num_points, index)
         num_points_bezier = Math.max(num_points_bezier, index_bezier)
         if ((num_points + num_points_bezier) >= max_verts) {
@@ -332,7 +331,7 @@ window.onload = () => {
         index %= max_verts
     })
 
-    // clea canvas butteon event listener
+    // clear canvas butteon event listener
     clearCanvasButton.addEventListener("click", (e) => clearCanvas())
 
 
